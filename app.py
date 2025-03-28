@@ -57,46 +57,91 @@
 #     app.run(host='0.0.0.0', port=5000, debug=True)
 
 
+# from flask import Flask, request, jsonify
+# import os
+
+# app = Flask(__name__)
+# UPLOAD_FOLDER = '/tmp'
+# app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# @app.route('/predict', methods=['POST'])
+# def predict():
+#     # Get bounding box parameters from form data
+#     x = request.form.get('x')
+#     y = request.form.get('y')
+#     width = request.form.get('width')
+#     height = request.form.get('height')
+#     timestamp = request.form.get('timestamp')
+    
+#     # Check if an image was uploaded
+#     if 'image' not in request.files:
+#         return jsonify({"error": "No image uploaded"}), 400
+#     image = request.files['image']
+    
+#     # Save image temporarily
+#     temp_image_path = os.path.join(app.config['UPLOAD_FOLDER'], image.filename)
+#     image.save(temp_image_path)
+    
+#     # Dummy prediction: For demonstration, return the received parameters
+#     print("Received parameters:")
+#     print("x:", x, "y:", y, "width:", width, "height:", height, "timestamp:", timestamp)
+#     print("Image saved temporarily at:", temp_image_path)
+    
+#     # (Your model logic would go here)
+    
+#     # Clean up the temporary image file after processing
+#     os.remove(temp_image_path)
+    
+#     return jsonify({
+#         "prediction": "dummy",
+#         "parameters": {"x": x, "y": y, "width": width, "height": height, "timestamp": timestamp}
+#     })
+
+# if __name__ == '__main__':
+#     app.run(debug=True, host='0.0.0.0')
+
 
 from flask import Flask, request, jsonify
-import os
 
 app = Flask(__name__)
-UPLOAD_FOLDER = '/tmp'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    # Get bounding box parameters from form data
-    x = request.form.get('x')
-    y = request.form.get('y')
-    width = request.form.get('width')
-    height = request.form.get('height')
-    timestamp = request.form.get('timestamp')
-    
-    # Check if an image was uploaded
-    if 'image' not in request.files:
-        return jsonify({"error": "No image uploaded"}), 400
-    image = request.files['image']
-    
-    # Save image temporarily
-    temp_image_path = os.path.join(app.config['UPLOAD_FOLDER'], image.filename)
-    image.save(temp_image_path)
-    
-    # Dummy prediction: For demonstration purposes, simply return the received parameters
-    print("Received parameters:")
-    print("x:", x, "y:", y, "width:", width, "height:", height, "timestamp:", timestamp)
-    print("Image saved temporarily at:", temp_image_path)
-    
-    # (Dummy model logic could go here)
-    
-    # Remove the temporary image file after processing
-    os.remove(temp_image_path)
-    
+    # Parse JSON payload from FE
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No JSON payload provided"}), 400
+
+    # Extract parameters from the JSON payload
+    x = data.get('x')
+    y = data.get('y')
+    width = data.get('width')
+    height = data.get('height')
+    image_path = data.get('imagePath')
+
+    # Check that all required fields are present
+    if None in [x, y, width, height, image_path]:
+        return jsonify({"error": "Missing one or more required fields: x, y, width, height, imagePath"}), 400
+
+    # Log the received values for debugging
+    print("Received JSON payload:")
+    print("x:", x, "y:", y, "width:", width, "height:", height, "imagePath:", image_path)
+
+    # Dummy prediction logic
+    dummy_prediction = "object_detected"
+
+    # Return the dummy prediction along with the received parameters
     return jsonify({
-        "prediction": "dummy",
-        "parameters": {"x": x, "y": y, "width": width, "height": height, "timestamp": timestamp}
+        "prediction": dummy_prediction,
+        "parameters": {
+            "x": x,
+            "y": y,
+            "width": width,
+            "height": height,
+            "imagePath": image_path
+        }
     })
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
+
